@@ -3,25 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TicketPromptAI — Ask for tickets, in plain words</title>
-<meta name="description" content="TicketPromptAI turns a plain-English request into live event listings and ticket pricing, powered by Google Gemini." />
+<title>PromptTicketAI — Ask for tickets, in plain words</title>
+<meta name="description" content="PromptTicketAI turns a plain-English request into live event listings and ticket pricing, powered by Google Gemini." />
+<link rel="icon" type="image/png" href="/assets/promptticketai-logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --ink: #14110d;
-    --ink-2: #1c1813;
-    --surface: #221d17;
-    --surface-2: #2a241d;
-    --line: #3a3127;
-    --paper: #f3ead9;
-    --paper-dim: #b8ab93;
-    --paper-faint: #8a7f6c;
-    --marigold: #f5b53d;
-    --marigold-deep: #d8932a;
-    --punch: #ff5b4c;
-    --mint: #7fd4a8;
+    --bg: #ffffff;
+    --surface: #f7f9fc;
+    --surface-2: #eef2f8;
+    --line: #e3e8f0;
+    --line-strong: #d3dae4;
+    --ink: #0f1b2d;
+    --ink-2: #2c3a4d;
+    --ink-dim: #5c6b7e;
+    --ink-faint: #93a0b0;
+    --blue: #0070FF;
+    --blue-deep: #0057c9;
+    --blue-soft: rgba(0, 112, 255, 0.10);
+    --green: #128a5b;
+    --amber: #b9760d;
+    --red: #df3f28;
     --radius: 14px;
   }
 
@@ -31,27 +35,15 @@
 
   body {
     margin: 0;
-    background-color: var(--ink);
+    background-color: var(--bg);
     background-image:
-      radial-gradient(120% 90% at 88% -10%, rgba(245, 181, 61, 0.16), transparent 55%),
-      radial-gradient(90% 70% at 5% 0%, rgba(255, 91, 76, 0.10), transparent 50%);
-    color: var(--paper);
+      radial-gradient(120% 90% at 88% -10%, rgba(0, 112, 255, 0.08), transparent 55%),
+      radial-gradient(90% 70% at 5% 0%, rgba(0, 112, 255, 0.05), transparent 50%);
+    color: var(--ink-2);
     font-family: "Spline Sans", system-ui, sans-serif;
     line-height: 1.55;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
-  }
-
-  /* faint grain overlay for paper texture */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
   }
 
   .wrap {
@@ -67,44 +59,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 26px 0 18px;
+    padding: 22px 0 18px;
     border-bottom: 1px solid var(--line);
   }
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    font-family: "Spline Sans Mono", monospace;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    font-size: 0.95rem;
-  }
-
-  .brand .glyph {
-    width: 30px; height: 30px;
-    display: grid; place-items: center;
-    color: var(--ink);
-    background: var(--marigold);
-    border-radius: 7px;
-    transform: rotate(-6deg);
-    box-shadow: 3px 3px 0 var(--marigold-deep);
-  }
-  .brand .glyph svg { width: 17px; height: 17px; }
-  .brand b { color: var(--paper); }
-  .brand span { color: var(--marigold); }
+  .brand { display: flex; align-items: center; }
+  .brand img { height: 34px; width: auto; display: block; }
 
   .tagchip {
     font-family: "Spline Sans Mono", monospace;
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--paper-dim);
+    color: var(--ink-dim);
+    background: var(--surface);
     border: 1px solid var(--line);
     padding: 6px 12px;
     border-radius: 999px;
   }
-  .tagchip i { color: var(--mint); font-style: normal; }
+  .tagchip i { color: var(--green); font-style: normal; }
 
   /* ---------- hero ---------- */
   .hero {
@@ -120,7 +93,7 @@
     font-size: 0.75rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--marigold);
+    color: var(--blue);
     margin: 0 0 18px;
   }
 
@@ -131,31 +104,32 @@
     line-height: 0.98;
     letter-spacing: -0.02em;
     margin: 0;
+    color: var(--ink);
     text-wrap: balance;
   }
   h1 em {
     font-style: normal;
-    color: var(--marigold);
+    color: var(--blue);
     position: relative;
   }
-  h1 .strike { color: var(--punch); }
+  h1 .strike { color: var(--ink-faint); }
 
   .lede {
-    color: var(--paper-dim);
+    color: var(--ink-dim);
     font-size: 1.05rem;
     max-width: 38ch;
     margin: 0 0 6px;
   }
-  .lede b { color: var(--paper); font-weight: 600; }
+  .lede b { color: var(--ink); font-weight: 600; }
 
   /* ---------- search console ---------- */
   .console {
     margin-top: 30px;
-    background: linear-gradient(180deg, var(--surface), var(--ink-2));
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 18px;
-    box-shadow: 0 24px 60px -30px rgba(0,0,0,0.9);
+    box-shadow: 0 24px 60px -34px rgba(15, 27, 45, 0.30);
   }
 
   .console-head {
@@ -166,10 +140,10 @@
     font-size: 0.7rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--paper-faint);
+    color: var(--ink-faint);
     margin-bottom: 12px;
   }
-  .console-head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--punch); }
+  .console-head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
 
   form { display: flex; gap: 10px; }
 
@@ -178,37 +152,37 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: var(--ink);
-    border: 1px solid var(--line);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
     border-radius: 10px;
     padding: 0 14px;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
   }
   .field:focus-within {
-    border-color: var(--marigold);
-    box-shadow: 0 0 0 3px rgba(245, 181, 61, 0.16);
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-soft);
   }
-  .field svg { width: 18px; height: 18px; color: var(--paper-faint); flex: none; }
+  .field svg { width: 18px; height: 18px; color: var(--ink-faint); flex: none; }
 
   input[type="text"] {
     flex: 1;
     background: none;
     border: none;
     outline: none;
-    color: var(--paper);
+    color: var(--ink);
     font-family: "Spline Sans", sans-serif;
     font-size: 1rem;
     padding: 15px 0;
   }
-  input::placeholder { color: var(--paper-faint); }
+  input::placeholder { color: var(--ink-faint); }
 
   button.go {
     font-family: "Spline Sans Mono", monospace;
     font-weight: 600;
     font-size: 0.85rem;
     letter-spacing: 0.04em;
-    color: var(--ink);
-    background: var(--marigold);
+    color: #fff;
+    background: var(--blue);
     border: none;
     border-radius: 10px;
     padding: 0 22px;
@@ -216,25 +190,26 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: transform 0.12s ease, background 0.18s ease;
+    box-shadow: 0 8px 18px -8px rgba(0, 112, 255, 0.6);
+    transition: transform 0.12s ease, background 0.18s ease, box-shadow 0.18s ease;
   }
-  button.go:hover { background: #ffc657; transform: translateY(-1px); }
+  button.go:hover { background: var(--blue-deep); transform: translateY(-1px); }
   button.go:active { transform: translateY(1px); }
-  button.go:disabled { opacity: 0.55; cursor: progress; }
+  button.go:disabled { opacity: 0.55; cursor: progress; box-shadow: none; }
   button.go svg { width: 16px; height: 16px; }
 
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .chip {
     font-size: 0.8rem;
-    color: var(--paper-dim);
-    background: var(--surface-2);
-    border: 1px solid var(--line);
+    color: var(--blue);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
     padding: 7px 13px;
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
   }
-  .chip:hover { color: var(--marigold); border-color: var(--marigold-deep); transform: translateY(-1px); }
+  .chip:hover { background: var(--blue); color: #fff; border-color: var(--blue); transform: translateY(-1px); }
 
   /* ---------- results ---------- */
   main { padding: 18px 0 80px; }
@@ -246,14 +221,14 @@
     gap: 16px;
     margin: 34px 0 22px;
     padding-bottom: 14px;
-    border-bottom: 1px dashed var(--line);
+    border-bottom: 1px dashed var(--line-strong);
     min-height: 30px;
   }
   .results-head .summary {
     font-family: "Bricolage Grotesque", serif;
     font-size: 1.25rem;
     letter-spacing: -0.01em;
-    color: var(--paper);
+    color: var(--ink);
     margin: 0;
   }
   .results-head .count {
@@ -261,7 +236,7 @@
     font-size: 0.72rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--paper-faint);
+    color: var(--ink-faint);
     white-space: nowrap;
   }
 
@@ -272,9 +247,10 @@
     position: relative;
     display: grid;
     grid-template-columns: 1fr 132px;
-    background: linear-gradient(160deg, var(--surface), var(--ink-2));
+    background: var(--bg);
     border: 1px solid var(--line);
     border-radius: var(--radius);
+    box-shadow: 0 16px 40px -28px rgba(15, 27, 45, 0.35);
     overflow: hidden;
     animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
@@ -285,7 +261,7 @@
     position: absolute;
     right: 122px;
     width: 20px; height: 20px;
-    background: var(--ink);
+    background: var(--bg);
     border-radius: 50%;
     border: 1px solid var(--line);
     z-index: 2;
@@ -300,16 +276,16 @@
     font-size: 0.66rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--marigold);
+    color: var(--blue);
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
   }
   .ticket-cat .barcode { display: flex; gap: 1.5px; height: 13px; opacity: 0.8; }
-  .ticket-cat .barcode i { width: 2px; background: var(--paper-faint); display: block; }
+  .ticket-cat .barcode i { width: 2px; background: var(--ink-faint); display: block; }
   .ticket-cat .barcode i:nth-child(2n){ width: 1px; }
-  .ticket-cat .barcode i:nth-child(3n){ height: 100%; background: var(--paper-dim); }
+  .ticket-cat .barcode i:nth-child(3n){ height: 100%; background: var(--ink-dim); }
 
   .ticket h3 {
     font-family: "Bricolage Grotesque", serif;
@@ -317,9 +293,10 @@
     font-size: 1.22rem;
     line-height: 1.1;
     margin: 0 0 3px;
+    color: var(--ink);
     letter-spacing: -0.01em;
   }
-  .ticket .headliner { color: var(--paper-dim); font-size: 0.9rem; margin: 0 0 14px; }
+  .ticket .headliner { color: var(--ink-dim); font-size: 0.9rem; margin: 0 0 14px; }
 
   .ticket .meta { display: grid; gap: 7px; }
   .ticket .meta div {
@@ -327,51 +304,51 @@
     align-items: center;
     gap: 9px;
     font-size: 0.86rem;
-    color: var(--paper-dim);
+    color: var(--ink-dim);
   }
-  .ticket .meta svg { width: 14px; height: 14px; color: var(--paper-faint); flex: none; }
-  .ticket .meta b { color: var(--paper); font-weight: 500; }
+  .ticket .meta svg { width: 14px; height: 14px; color: var(--ink-faint); flex: none; }
+  .ticket .meta b { color: var(--ink); font-weight: 500; }
 
   .tiers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   .tiers span {
     font-family: "Spline Sans Mono", monospace;
     font-size: 0.7rem;
-    color: var(--paper-dim);
-    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    border: 1px solid var(--line-strong);
     border-radius: 6px;
     padding: 4px 8px;
   }
-  .tiers span b { color: var(--marigold); font-weight: 600; }
+  .tiers span b { color: var(--blue); font-weight: 600; }
 
   /* stub */
   .ticket-stub {
     position: relative;
-    border-left: 2px dashed var(--line);
+    border-left: 2px dashed var(--line-strong);
     padding: 18px 14px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
     text-align: center;
-    background: rgba(0,0,0,0.16);
+    background: var(--surface);
   }
   .stub-from {
     font-family: "Spline Sans Mono", monospace;
     font-size: 0.6rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--paper-faint);
+    color: var(--ink-faint);
   }
   .stub-price {
     font-family: "Bricolage Grotesque", serif;
     font-weight: 700;
     font-size: 1.7rem;
     line-height: 1;
-    color: var(--paper);
+    color: var(--ink);
     margin: 6px 0 2px;
   }
-  .stub-price small { font-size: 0.8rem; color: var(--paper-dim); font-weight: 400; }
-  .stub-range { font-size: 0.7rem; color: var(--paper-faint); font-family: "Spline Sans Mono", monospace; }
+  .stub-price small { font-size: 0.8rem; color: var(--ink-dim); font-weight: 400; }
+  .stub-range { font-size: 0.7rem; color: var(--ink-faint); font-family: "Spline Sans Mono", monospace; }
 
   .avail {
     font-family: "Spline Sans Mono", monospace;
@@ -383,10 +360,10 @@
     border: 1px solid currentColor;
     margin-top: 10px;
   }
-  .avail.plenty   { color: var(--mint); }
-  .avail.limited  { color: var(--marigold); }
-  .avail.few      { color: var(--punch); }
-  .avail.sold     { color: var(--paper-faint); opacity: 0.8; }
+  .avail.plenty   { color: var(--green); }
+  .avail.limited  { color: var(--amber); }
+  .avail.few      { color: var(--red); }
+  .avail.sold     { color: var(--ink-faint); }
 
   /* ---------- skeleton ---------- */
   .skeleton { pointer-events: none; }
@@ -402,25 +379,25 @@
   .state {
     text-align: center;
     padding: 56px 20px;
-    border: 1px dashed var(--line);
+    border: 1px dashed var(--line-strong);
     border-radius: var(--radius);
-    color: var(--paper-dim);
+    background: var(--surface);
+    color: var(--ink-dim);
   }
   .state .icon {
     width: 46px; height: 46px;
     margin: 0 auto 16px;
-    color: var(--marigold);
-    opacity: 0.85;
+    color: var(--blue);
   }
   .state h4 {
     font-family: "Bricolage Grotesque", serif;
-    color: var(--paper);
+    color: var(--ink);
     font-size: 1.3rem;
     margin: 0 0 6px;
   }
   .state p { margin: 0 auto; max-width: 44ch; font-size: 0.92rem; }
-  .state.error { border-color: rgba(255, 91, 76, 0.5); }
-  .state.error .icon { color: var(--punch); }
+  .state.error { border-color: rgba(223, 63, 40, 0.5); background: rgba(223, 63, 40, 0.04); }
+  .state.error .icon { color: var(--red); }
 
   /* ---------- footer ---------- */
   footer {
@@ -431,19 +408,19 @@
     gap: 14px;
     align-items: center;
     justify-content: space-between;
-    color: var(--paper-faint);
+    color: var(--ink-faint);
     font-size: 0.8rem;
   }
   footer .disclaimer {
     display: flex; align-items: center; gap: 9px;
     max-width: 60ch;
   }
-  footer .disclaimer svg { width: 16px; height: 16px; color: var(--marigold); flex: none; }
+  footer .disclaimer svg { width: 16px; height: 16px; color: var(--blue); flex: none; }
   footer .powered {
     font-family: "Spline Sans Mono", monospace;
     letter-spacing: 0.06em;
   }
-  footer .powered b { color: var(--paper-dim); }
+  footer .powered b { color: var(--ink-dim); }
 
   .hidden { display: none !important; }
 
@@ -455,6 +432,7 @@
     form { flex-direction: column; }
     button.go { justify-content: center; padding: 14px; }
     .tagchip { display: none; }
+    .brand img { height: 28px; }
   }
 </style>
 </head>
@@ -462,10 +440,7 @@
   <div class="wrap">
     <header>
       <div class="brand">
-        <span class="glyph" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 0 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v14"/></svg>
-        </span>
-        <span>TICKETPROMPT<b>//</b>AI</span>
+        <img src="/assets/promptticketai-logo.png" alt="PromptTicketAI" />
       </div>
       <div class="tagchip">Gemini live · <i>online</i></div>
     </header>
@@ -476,7 +451,7 @@
         <h1>Just say what<br>you want to <em>see.</em><br><span class="strike">We'll find the</span> tickets.</h1>
       </div>
       <div>
-        <p class="lede">Skip the filters and dropdowns. Describe the night — a band, a city, a vibe — and <b>TicketPromptAI</b> returns matching events with venues, dates and real-world price ranges.</p>
+        <p class="lede">Skip the filters and dropdowns. Describe the night — a band, a city, a vibe — and <b>PromptTicketAI</b> returns matching events with venues, dates and real-world price ranges.</p>
       </div>
     </section>
 
@@ -513,7 +488,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4a2 2 0 0 0 0 4v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4a2 2 0 0 0 0-4Z"/><path d="M9 9h6M9 13h4"/></svg>
         </div>
         <h4>Your tickets will print here</h4>
-        <p>Type a request above or tap one of the examples. TicketPromptAI reads it and pulls together a set of matching events for you.</p>
+        <p>Type a request above or tap one of the examples. PromptTicketAI reads it and pulls together a set of matching events for you.</p>
       </div>
 
       <div class="grid hidden" id="grid"></div>
