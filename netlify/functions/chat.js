@@ -1,10 +1,9 @@
-// Chat endpoint backed by Netlify AI Gateway.
-// No API keys required — Netlify injects the gateway credentials at runtime
-// (NETLIFY_AI_GATEWAY_BASE_URL / NETLIFY_AI_GATEWAY_KEY) and bills inference
-// to your Netlify account credits.
+// Chat endpoint backed by Google Gemini through the Netlify AI Gateway.
+// No API keys required — Netlify injects the Gemini gateway credentials at
+// runtime (GEMINI_API_KEY / GOOGLE_GEMINI_BASE_URL) and bills inference to
+// your Netlify account credits.
 
-const MODEL = "claude-sonnet-4-6";
-const MAX_TOKENS = 1024;
+const MODEL = "gemini-2.5-flash";
 
 export default async (req) => {
   if (req.method !== "POST") {
@@ -18,23 +17,16 @@ export default async (req) => {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // Accept either a single `prompt` string or a full `messages` array.
-  const { prompt, messages, system } = body ?? {};
-
-  let chatMessages;
-  if (Array.isArray(messages) && messages.length > 0) {
-    chatMessages = messages;
-  } else if (typeof prompt === "string" && prompt.trim() !== "") {
-    chatMessages = [{ role: "user", content: prompt }];
-  } else {
+  const { prompt } = body ?? {};
+  if (typeof prompt !== "string" || prompt.trim() === "") {
     return Response.json(
-      { error: "Provide a non-empty `prompt` string or a `messages` array." },
+      { error: "Provide a non-empty `prompt` string." },
       { status: 400 }
     );
   }
 
-  const baseUrl = process.env.NETLIFY_AI_GATEWAY_BASE_URL;
-  const apiKey = process.env.NETLIFY_AI_GATEWAY_KEY;
+  const baseUrl = process.env.GOOGLE_GEMINI_BASE_URL;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!baseUrl || !apiKey) {
     return Response.json(
       {
@@ -46,20 +38,16 @@ export default async (req) => {
   }
 
   try {
-    const upstream = await fetch(`${baseUrl}/anthropic/v1/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        ...(system ? { system } : {}),
-        messages: chatMessages,
-      }),
-    });
+    const upstream = await fetch(
+      `${baseUrl}/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      }
+    );
 
     if (!upstream.ok) {
       const detail = await upstream.text();
@@ -70,14 +58,12 @@ export default async (req) => {
     }
 
     const data = await upstream.json();
-    const reply = Array.isArray(data.content)
-      ? data.content
-          .filter((block) => block.type === "text")
-          .map((block) => block.text)
-          .join("")
-      : "";
+    const reply =
+      data?.candidates?.[0]?.content?.parts
+        ?.map((part) => part.text ?? "")
+        .join("") ?? "";
 
-    return Response.json({ reply, model: MODEL });
+    return Response.json({ response: reply, model: MODEL });
   } catch (err) {
     return Response.json(
       { error: "Request failed", detail: String(err) },
