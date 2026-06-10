@@ -1,0 +1,6 @@
+# Serve the static frontend from the repo root and resolve functions
+# from netlify/functions. The /api/chat route is defined by the function's
+# own `config.path`.
+[build]
+  publish = "."
+  functions = "netlify/functions"
